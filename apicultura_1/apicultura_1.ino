@@ -35,7 +35,7 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 const char* ssid     = "ESP8266-Access-Point";
 const char* password = "123456789";
 
-#define DHTPIN 5     // Digital pin connected to the DHT sensor
+#define DHTPIN 0    // Digital pin connected to the DHT sensor
 
 // Uncomment the type of sensor in use:
 //#define DHTTYPE    DHT11     // DHT 11
@@ -161,19 +161,12 @@ void setup(){
   // Serial port for debugging purposes
   Serial.begin(115200);
   dht.begin();
-   // Iniciar pantalla OLED en la dirección 0x3C
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-    #ifdef __DEBUG__
-    Serial.println("No se encuentra la pantalla OLED");
-    #endif
-    while (true);
-  }
-   
+
     // Iniciar pantalla OLED en la dirección 0x3C
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-#ifdef __DEBUG__
-    Serial.println("No se encuentra la pantalla OLED");
-#endif
+    #ifdef __DEBUG__
+      Serial.println("No se encuentra la pantalla OLED");
+    #endif
     while (true);
   }
  
