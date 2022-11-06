@@ -5,13 +5,17 @@
 #include <ESPAsyncWebServer.h>
 #include <ESP8266WiFi.h>
 #include <DHT.h>
-
 //tabs
 #include "Graphic_esp8266_dht22_oledi2c.h"
 
+//Set values for Auto Control Mode
+const float maxTemp = 21.5;
+const float minTemp = 20.8;
 
 #define DHTPIN 0     // what pin we're connected to
 #define DHTTYPE DHT22   // DHT 11
+#define RELAY_PIN_1 14  //D5
+int toggleState_1 = 0;
 
 // SSID and pass
 const char* ssid     = "Indumentaria_Apicola";
@@ -123,7 +127,10 @@ void setup() {
     delay(1000);
     Serial.println(".");
   }*/
-
+  pinMode(RELAY_PIN_1, OUTPUT);
+  // Normally Open configuration, send LOW signal to let current flow
+  // (if you're usong Normally Closed configuration send HIGH signal)
+  digitalWrite(RELAY_PIN_1, LOW);
 
   Serial.print("Setting AP (Access Point)…");
   // Remove the password parameter, if you want the AP (Access Point) to be open
@@ -205,24 +212,34 @@ display.display();
 }
 
 void loop() {
-display.clear(); // clearing the display
-displayTempHumid();
- unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
-    // save the last time you updated the DHT values
-    previousMillis = currentMillis;
-    // Read temperature as Celsius (the default)
-    float newT = dht.readTemperature();
-    // Read temperature as Fahrenheit (isFahrenheit = true)
-    //float newT = dht.readTemperature(true);
-    // if temperature read failed, don't change t value
+  display.clear(); // clearing the display
+  displayTempHumid();
+  unsigned long currentMillis = millis();
+    if (currentMillis - previousMillis >= interval) {
+      // save the last time you updated the DHT values
+      previousMillis = currentMillis;
+      // Read temperature as Celsius (the default)
+      float newT = dht.readTemperature();
+      // Read temperature as Fahrenheit (isFahrenheit = true)
+      //float newT = dht.readTemperature(true);
+      // if temperature read failed, don't change t value
     if (isnan(newT)) {
       Serial.println("Failed to read from DHT sensor!");
-    }
-    else {
+    } else {
+        if (newT > maxTemp) {
+            if (toggleState_1 == 0) {
+              digitalWrite(RELAY_PIN_1, HIGH);  // turn ON relay 1
+              toggleState_1 = 1;
+          }
+        } else if (newT < minTemp) {
+            if (toggleState_1 == 1) {
+              digitalWrite(RELAY_PIN_1, LOW);  // turn OFF relay 1
+              toggleState_1 = 0;
+            }
+          }
       t = newT;
       Serial.println(t);
-    }
+      }
     // Read Humidity
     float newH = dht.readHumidity();
     // if humidity read failed, don't change h value 
